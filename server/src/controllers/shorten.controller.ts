@@ -20,7 +20,7 @@ export const createShortUrl = async (req: Request, res: Response, next: NextFunc
 
 export const getOriginal = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { shortCode } = req.body;
+        const { shortCode } = req.params;
         const doc = await UrlModel.findOneAndUpdate(
             { shortCode },
             { $inc: { accessCount: 1 } },
@@ -28,6 +28,57 @@ export const getOriginal = async (req: Request, res: Response, next: NextFunctio
         )
         if (!doc) return res.status(404).json({ message: 'Short URL not found' });
         res.json(doc);
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+export const updateUrl = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { shortCode } = req.params;
+        const parsed = createUrlSchema.safeParse(req.body);
+        if (!parsed.success) {
+            return res.status(400).json({ rrors: parsed.error.flatten().fieldErrors })
+        }
+        const doc = await UrlModel.findOneAndUpdate(
+            { shortCode },
+            { url: parsed.data.url },
+            { new: true }
+        )
+        if (!doc) return res.status(404).json({ message: 'Short URL not found' });
+        res.json(doc);
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const deleteUrl = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { shortCode } = req.params;
+        const result = await UrlModel.findOneAndDelete({ shortCode });
+
+        if (!result) {
+            return res.status(404).json({ message: 'Short URL not found' });
+        }
+
+        res.status(204).send()
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+export const getStats = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { shortCode } = req.params;
+        const doc = await UrlModel.findOne({ shortCode })
+
+        if (!doc) return res.status(404).json({ message: 'Short URL not found' });
+
+        res.json(doc);
+
     } catch (error) {
         next(error);
     }
