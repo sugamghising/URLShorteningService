@@ -10,13 +10,13 @@ import { errorHandler, notFound } from './middlewares/error.middleware';
 const app = express()
 dotenv.config();
 
-const PORT = process.env.PORT || 5000;
+const PORT = env.PORT || 5000;
 
 app.use(cors({ origin: env.BASE_URL, credentials: true }))
 app.use(express.json())
 app.use(morgan('dev'))
 
-app.get('/', (req, res) => { res.send(`Hello from backend.`) })
+app.get('/', (_req, res) => { res.send(`Hello from backend.`) })
 
 app.use('/api/shorten', shortenRouter);
 

@@ -39,7 +39,7 @@ export const updateUrl = async (req: Request, res: Response, next: NextFunction)
         const { shortCode } = req.params;
         const parsed = createUrlSchema.safeParse(req.body);
         if (!parsed.success) {
-            return res.status(400).json({ rrors: parsed.error.flatten().fieldErrors })
+            return res.status(400).json({ errors: parsed.error.flatten().fieldErrors })
         }
         const doc = await UrlModel.findOneAndUpdate(
             { shortCode },
@@ -63,7 +63,7 @@ export const deleteUrl = async (req: Request, res: Response, next: NextFunction)
             return res.status(404).json({ message: 'Short URL not found' });
         }
 
-        res.status(204).send()
+        res.status(204).json({ message: "Url removed successfully." })
     } catch (error) {
         next(error);
     }
