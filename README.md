@@ -1,19 +1,28 @@
-# URL Shortener API
+# URL Shortener
 
-A robust and efficient URL shortening service built with Node.js, Express, TypeScript, and MongoDB. This service allows you to create short, memorable links from long URLs, track access statistics, and manage your shortened URLs with full CRUD operations.
+A complete, full-stack URL shortening service with a modern React frontend and robust Node.js backend. This application allows you to create short, memorable links, track access statistics, and manage URLs with an intuitive user interface.
 
 ## 🚀 Features
+
+### Frontend
+
+- **Modern UI/UX**: Beautiful, responsive interface built with React and Tailwind CSS
+- **Real-time Updates**: Instant feedback on all actions
+- **Copy to Clipboard**: One-click copying of shortened URLs
+- **Statistics Dashboard**: Visual display of URL metrics
+- **Mobile Responsive**: Works seamlessly on all devices
+
+### Backend
 
 - **URL Shortening**: Convert long URLs into short, easy-to-share links
 - **Unique Short Codes**: Automatically generate collision-free short codes using nanoid
 - **Access Tracking**: Monitor how many times each shortened URL has been accessed
 - **Full CRUD Operations**: Create, read, update, and delete shortened URLs
-- **Statistics**: View detailed statistics for each shortened URL
 - **RESTful API**: Clean and intuitive API endpoints
-- **Type Safety**: Built with TypeScript for better code quality and developer experience
+- **Type Safety**: Built with TypeScript for better code quality
 - **Input Validation**: Robust validation using Zod schema validation
 - **Enhanced Error Handling**: Custom error classes with proper HTTP status codes
-- **Environment Validation**: Startup validation ensures all required configurations are present
+- **Environment Validation**: Startup validation ensures all required configurations
 - **Rate Limiting**: Multi-layer protection against abuse and DDoS attacks
 - **MongoDB Integration**: Persistent storage with MongoDB and Mongoose ODM
 
@@ -22,6 +31,8 @@ A robust and efficient URL shortening service built with Node.js, Express, TypeS
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
+  - [Backend Setup](#backend-setup)
+  - [Frontend Setup](#frontend-setup)
 - [Environment Variables](#environment-variables)
 - [API Endpoints](#api-endpoints)
 - [Rate Limiting](#rate-limiting)
@@ -31,6 +42,16 @@ A robust and efficient URL shortening service built with Node.js, Express, TypeS
 - [Recent Updates](#recent-updates)
 
 ## 🛠️ Tech Stack
+
+### Frontend
+
+- **Framework**: React 19.2.0
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS 3.x
+- **Build Tool**: Create React App
+- **HTTP Client**: Fetch API
+
+### Backend
 
 - **Runtime**: Node.js
 - **Framework**: Express.js v5
@@ -47,7 +68,31 @@ A robust and efficient URL shortening service built with Node.js, Express, TypeS
 
 ```
 UrlShortner/
-├── server/
+├── client/                         # React frontend application
+│   ├── public/
+│   │   ├── index.html
+│   │   └── favicon.ico
+│   ├── src/
+│   │   ├── components/            # React components
+│   │   │   ├── Header.tsx         # Application header
+│   │   │   ├── Footer.tsx         # Application footer
+│   │   │   ├── UrlForm.tsx        # URL shortening form
+│   │   │   ├── UrlCard.tsx        # Display shortened URL
+│   │   │   └── Stats.tsx          # Statistics dashboard
+│   │   ├── services/              # API services
+│   │   │   └── api.service.ts     # Backend API integration
+│   │   ├── types/                 # TypeScript type definitions
+│   │   │   └── url.types.ts       # URL-related types
+│   │   ├── utils/                 # Utility functions
+│   │   │   └── helpers.ts         # Helper functions
+│   │   ├── hooks/                 # Custom React hooks
+│   │   ├── App.tsx                # Main application component
+│   │   ├── index.tsx              # Application entry point
+│   │   └── index.css              # Global styles with Tailwind
+│   ├── .env                       # Environment variables
+│   ├── tailwind.config.js         # Tailwind configuration
+│   └── package.json
+├── server/                        # Node.js backend API
 │   ├── src/
 │   │   ├── config/
 │   │   │   ├── db.ts              # Database connection configuration
@@ -84,6 +129,8 @@ UrlShortner/
 
 ### Installation
 
+#### Backend Setup
+
 1. **Clone the repository**
 
    ```bash
@@ -111,7 +158,7 @@ UrlShortner/
    PORT=5000
    NODE_ENV=development
    MONGODB_URI=mongodb://localhost:27017/urlshortener
-   CLIENT_ORIGIN=*
+   CLIENT_ORIGIN=http://localhost:3000
    BASE_URL=http://localhost:5000
    ```
 
@@ -144,6 +191,46 @@ UrlShortner/
    ```bash
    curl http://localhost:5000/health
    ```
+
+#### Frontend Setup
+
+1. **Navigate to the client directory**
+
+   ```bash
+   cd client
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+
+   Create a `.env` file in the `client` directory:
+
+   ```env
+   REACT_APP_API_URL=http://localhost:5000/api/shorten
+   ```
+
+4. **Start the development server**
+
+   ```bash
+   npm start
+   ```
+
+   The application will open at `http://localhost:3000`
+
+5. **Build for production**
+
+   ```bash
+   npm run build
+   ```
+
+   The optimized production build will be created in the `build` folder.
+
+For detailed frontend documentation, see [CLIENT_README.md](./CLIENT_README.md).
 
 ## 🔐 Environment Variables
 

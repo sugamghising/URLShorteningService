@@ -30,7 +30,8 @@ export const getOriginal = async (req: Request, res: Response, next: NextFunctio
         if (!doc) {
             throw new NotFoundError('Short URL not found');
         }
-        res.json(doc);
+        // Redirect to the original URL
+        res.redirect(doc.url);
     } catch (error) {
         next(error);
     }
