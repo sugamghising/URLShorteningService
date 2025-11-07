@@ -12,7 +12,9 @@ A robust and efficient URL shortening service built with Node.js, Express, TypeS
 - **RESTful API**: Clean and intuitive API endpoints
 - **Type Safety**: Built with TypeScript for better code quality and developer experience
 - **Input Validation**: Robust validation using Zod schema validation
-- **Error Handling**: Comprehensive error handling middleware
+- **Enhanced Error Handling**: Custom error classes with proper HTTP status codes
+- **Environment Validation**: Startup validation ensures all required configurations are present
+- **Rate Limiting**: Multi-layer protection against abuse and DDoS attacks
 - **MongoDB Integration**: Persistent storage with MongoDB and Mongoose ODM
 
 ## 📋 Table of Contents
@@ -22,9 +24,11 @@ A robust and efficient URL shortening service built with Node.js, Express, TypeS
 - [Getting Started](#getting-started)
 - [Environment Variables](#environment-variables)
 - [API Endpoints](#api-endpoints)
+- [Rate Limiting](#rate-limiting)
+- [Error Handling](#error-handling)
 - [Usage Examples](#usage-examples)
 - [Development](#development)
-- [Future Enhancements](#future-enhancements)
+- [Recent Updates](#recent-updates)
 
 ## 🛠️ Tech Stack
 
@@ -32,8 +36,9 @@ A robust and efficient URL shortening service built with Node.js, Express, TypeS
 - **Framework**: Express.js v5
 - **Language**: TypeScript
 - **Database**: MongoDB with Mongoose ODM
-- **Validation**: Zod
+- **Validation**: Zod (input validation & environment variables)
 - **ID Generation**: nanoid
+- **Rate Limiting**: express-rate-limit
 - **CORS**: cors middleware
 - **Logging**: morgan
 - **Environment**: dotenv
@@ -46,24 +51,27 @@ UrlShortner/
 │   ├── src/
 │   │   ├── config/
 │   │   │   ├── db.ts              # Database connection configuration
-│   │   │   └── env.ts             # Environment variables configuration
+│   │   │   └── env.ts             # Environment variables validation (Zod)
 │   │   ├── controllers/
 │   │   │   └── shorten.controller.ts  # Business logic for URL operations
 │   │   ├── middlewares/
-│   │   │   └── error.middleware.ts    # Error handling middleware
+│   │   │   ├── error.middleware.ts    # Enhanced error handling middleware
+│   │   │   └── rateLimiter.middleware.ts  # Rate limiting configurations
 │   │   ├── models/
 │   │   │   └── Url.model.ts       # Mongoose schema and model
 │   │   ├── routes/
-│   │   │   └── shorten.routes.ts  # API route definitions
+│   │   │   └── shorten.routes.ts  # API route definitions with rate limiters
 │   │   ├── schema/
 │   │   │   └── shorten.schema.ts  # Zod validation schemas
 │   │   ├── utils/
-│   │   │   └── generateShortCode.ts  # Short code generation utility
+│   │   │   ├── generateShortCode.ts  # Short code generation utility
+│   │   │   └── errors.ts          # Custom error classes
 │   │   └── index.ts               # Application entry point
+│   ├── .env.example               # Environment variables template
 │   ├── package.json
 │   └── tsconfig.json
 ├── .gitignore
-└── README.md
+├── README.md
 ```
 
 ## 🚦 Getting Started
@@ -97,14 +105,17 @@ UrlShortner/
 
 4. **Set up environment variables**
 
-   Create a `.env` file in the `server` directory:
+   Create a `.env` file in the `server` directory (use `.env.example` as template):
 
    ```env
    PORT=5000
+   NODE_ENV=development
    MONGODB_URI=mongodb://localhost:27017/urlshortener
    CLIENT_ORIGIN=*
    BASE_URL=http://localhost:5000
    ```
+
+   **Note**: The server will validate environment variables on startup and exit if required variables are missing.
 
 5. **Build the project**
 
@@ -136,12 +147,15 @@ UrlShortner/
 
 ## 🔐 Environment Variables
 
-| Variable        | Description                  | Default                 |
-| --------------- | ---------------------------- | ----------------------- |
-| `PORT`          | Server port number           | `5000`                  |
-| `MONGODB_URI`   | MongoDB connection string    | Required                |
-| `CLIENT_ORIGIN` | Allowed CORS origin          | `*`                     |
-| `BASE_URL`      | Base URL for the application | `http://localhost:5000` |
+| Variable        | Description                  | Required | Default                 |
+| --------------- | ---------------------------- | -------- | ----------------------- |
+| `PORT`          | Server port number           | No       | `5000`                  |
+| `NODE_ENV`      | Environment mode             | No       | `development`           |
+| `MONGODB_URI`   | MongoDB connection string    | **Yes**  | -                       |
+| `CLIENT_ORIGIN` | Allowed CORS origin          | No       | `*`                     |
+| `BASE_URL`      | Base URL for the application | No       | `http://localhost:5000` |
+
+**Environment Validation**: The application uses Zod to validate all environment variables at startup. If required variables are missing or invalid, the server will display clear error messages and exit.
 
 ## 📡 API Endpoints
 
@@ -164,6 +178,79 @@ http://localhost:5000/api/shorten
 ### Health Check
 
 - `GET /health` - Check if the server is running
+
+## 🛡️ Rate Limiting
+
+The API implements multi-layer rate limiting to protect against abuse and ensure fair usage:
+
+### Rate Limit Configuration
+
+| Limiter       | Window | Max Requests | Applied To                          | Purpose                     |
+| ------------- | ------ | ------------ | ----------------------------------- | --------------------------- |
+| **Global**    | 15 min | 200          | All endpoints                       | Overall API protection      |
+| **Create**    | 15 min | 100          | `POST /api/shorten`                 | Prevent spam URL creation   |
+| **Get**       | 1 min  | 60           | `GET /api/shorten/:shortCode`       | Balance access & protection |
+| **Get Stats** | 1 min  | 60           | `GET /api/shorten/:shortCode/stats` | Analytics access control    |
+| **Modify**    | 15 min | 30           | `PUT`, `DELETE` endpoints           | Protect write operations    |
+
+### Rate Limit Headers
+
+All responses include rate limit information:
+
+```http
+RateLimit-Limit: 100
+RateLimit-Remaining: 87
+RateLimit-Reset: 1699372800
+```
+
+### Rate Limit Exceeded Response
+
+When rate limit is exceeded, you'll receive:
+
+```json
+{
+  "status": "error",
+  "message": "Too many requests from this IP, please try again later."
+}
+```
+
+**HTTP Status Code**: `429 Too Many Requests`
+
+For detailed information, see [RATE_LIMITING_GUIDE.md](./RATE_LIMITING_GUIDE.md)
+
+## 🚨 Error Handling
+
+The API uses custom error classes for consistent error responses:
+
+### Error Response Format
+
+```json
+{
+  "status": "error",
+  "message": "Descriptive error message"
+}
+```
+
+### HTTP Status Codes
+
+| Status Code | Error Type            | Description                       |
+| ----------- | --------------------- | --------------------------------- |
+| `400`       | Bad Request           | Invalid input or validation error |
+| `404`       | Not Found             | Resource doesn't exist            |
+| `409`       | Conflict              | Duplicate resource                |
+| `429`       | Too Many Requests     | Rate limit exceeded               |
+| `500`       | Internal Server Error | Unexpected server error           |
+
+### Custom Error Classes
+
+The application includes the following error types:
+
+- `ValidationError` (400)
+- `NotFoundError` (404)
+- `ConflictError` (409)
+- `UnauthorizedError` (401)
+- `ForbiddenError` (403)
+- `InternalServerError` (500)
 
 ## 💡 Usage Examples
 
@@ -250,6 +337,37 @@ curl -X PUT http://localhost:5000/api/shorten/abc123 \
 curl -X DELETE http://localhost:5000/api/shorten/abc123
 ```
 
+**Success Response:** `204 No Content`
+
+### Error Responses
+
+**404 Not Found:**
+
+```json
+{
+  "status": "error",
+  "message": "Short URL not found"
+}
+```
+
+**400 Validation Error:**
+
+```json
+{
+  "status": "error",
+  "message": "Invalid URL format"
+}
+```
+
+**429 Rate Limit Exceeded:**
+
+```json
+{
+  "status": "error",
+  "message": "Too many URL creation requests from this IP, please try again after 15 minutes."
+}
+```
+
 ## 🔧 Development
 
 ### Available Scripts
@@ -268,141 +386,36 @@ The project uses:
 - **Source Maps** for easier debugging
 - **Type Declarations** for better IDE support
 
-## 🚀 Future Enhancements
+## 📝 Recent Updates
 
-### Immediate Improvements
+### November 7, 2025 - Critical Improvements ✅
 
-1. **Custom Short Codes**
+#### 1. **Route Order Fix**
 
-   - Allow users to specify custom short codes instead of auto-generated ones
-   - Validate custom codes for availability and format
+- Fixed stats endpoint routing conflict
+- `/:shortCode/stats` now accessible (was being caught by generic route)
 
-2. **Expiration Dates**
+#### 2. **Enhanced Error Handling**
 
-   - Add optional expiration dates for shortened URLs
-   - Implement automatic cleanup of expired URLs
-   - Background job to remove expired links
+- Implemented custom error classes (`NotFoundError`, `ValidationError`, etc.)
+- Consistent error response format across all endpoints
+- Proper HTTP status codes for different error types
+- Better error messages for debugging
 
-3. **Testing Suite**
+#### 3. **Environment Validation**
 
-   - Unit tests for utility functions
-   - Integration tests for API endpoints
-   - E2E tests for complete workflows
-   - Use Jest or Mocha with Supertest
+- Added Zod schema validation for environment variables
+- Server validates configuration on startup
+- Clear error messages for missing/invalid variables
+- Prevents runtime errors from misconfiguration
 
-4. **Rate Limiting**
+#### 4. **Rate Limiting Implementation**
 
-   - Implement rate limiting to prevent abuse
-   - Use express-rate-limit or similar middleware
-   - Different limits for different endpoints
-
-5. **Authentication & Authorization**
-   - User registration and login
-   - JWT-based authentication
-   - User-specific URL management
-   - Admin dashboard for monitoring
-
-### Medium-term Enhancements
-
-6. **Analytics Dashboard**
-
-   - Track click timestamps
-   - Geographic location tracking (IP-based)
-   - Referrer tracking
-   - Device and browser analytics
-   - Visual charts and graphs
-
-7. **QR Code Generation**
-
-   - Generate QR codes for shortened URLs
-   - Customizable QR code styling
-   - Download QR codes in various formats
-
-8. **Bulk Operations**
-
-   - Batch URL creation
-   - Export URL statistics
-   - CSV/Excel import and export
-
-9. **URL Validation & Security**
-
-   - Check URLs against malware/phishing databases
-   - Implement URL preview functionality
-   - Add CAPTCHA for public endpoints
-   - Blacklist malicious domains
-
-10. **Caching Layer**
-    - Implement Redis for caching frequently accessed URLs
-    - Reduce database load
-    - Improve response times
-
-### Long-term Vision
-
-11. **Frontend Dashboard**
-
-    - React or Vue.js-based admin panel
-    - Real-time analytics
-    - URL management interface
-    - User profile management
-
-12. **API Documentation**
-
-    - Swagger/OpenAPI documentation
-    - Interactive API explorer
-    - SDK generation for multiple languages
-
-13. **Microservices Architecture**
-
-    - Separate analytics service
-    - Dedicated redirect service
-    - Queue-based background jobs
-    - Message broker integration (RabbitMQ/Kafka)
-
-14. **Advanced Features**
-
-    - A/B testing support
-    - Link rotation
-    - Password-protected links
-    - Link scheduling (activate/deactivate at specific times)
-    - Branded short domains
-
-15. **Scalability & Performance**
-
-    - Load balancing
-    - Database sharding
-    - CDN integration
-    - Horizontal scaling support
-    - Monitoring and alerting (Prometheus, Grafana)
-
-16. **Mobile Application**
-    - Native iOS and Android apps
-    - React Native or Flutter implementation
-    - QR code scanning
-    - Offline mode support
-
-## 🐛 Known Issues & Recommendations
-
-### Current Recommendations
-
-1. **Route Conflict**: The stats endpoint (`/:shortCode/stats`) should be defined before the generic `/:shortCode` route to avoid conflicts. Consider restructuring routes.
-
-2. **Environment Validation**: Add validation to ensure all required environment variables are present at startup.
-
-3. **Error Messages**: Provide more descriptive error messages to clients for better debugging.
-
-4. **Logging**: Enhance logging with different levels (info, warn, error) and consider using Winston or Pino.
-
-5. **Database Indexes**: Ensure proper indexes are set on frequently queried fields (already done for `shortCode`).
-
-6. **Input Sanitization**: Add additional input sanitization beyond URL validation.
-
-7. **CORS Configuration**: Make CORS configuration more restrictive in production.
-
-8. **Documentation**: Add JSDoc comments to functions and interfaces.
-
-9. **Health Check Enhancement**: Include database connection status in health check endpoint.
-
-10. **Graceful Shutdown**: Implement graceful shutdown handling for the server and database connections.
+- Multi-layer rate limiting protection
+- Global limiter (200 req/15min) + endpoint-specific limiters
+- Prevents DDoS attacks and API abuse
+- Rate limit headers in all responses
+- Configurable limits per endpoint type
 
 ## 📄 License
 
