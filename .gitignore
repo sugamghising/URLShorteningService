@@ -12,7 +12,7 @@ server/dist/
 # Environment
 .env
 server/.env
-.env.*
+
 
 # Logs
 logs/
