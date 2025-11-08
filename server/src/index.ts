@@ -33,3 +33,7 @@ connectDb();
 app.listen(PORT, () => {
     console.log(`App listening to PORT ${PORT}`)
 })
+
+
+//vercel deployment
+export default app;
