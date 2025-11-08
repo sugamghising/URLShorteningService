@@ -1,0 +1,9 @@
+node_modules
+src
+.env
+.env.example
+.git
+.gitignore
+*.md
+tsconfig.json
+nodemon.json

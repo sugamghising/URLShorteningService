@@ -16,7 +16,7 @@ const PORT = env.PORT || 5000;
 // Apply global rate limiter to all requests
 app.use(globalLimiter);
 
-app.use(cors({ origin: env.BASE_URL, credentials: true }))
+app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }))
 app.use(express.json())
 app.use(morgan('dev'))
 
@@ -32,8 +32,8 @@ app.use(errorHandler);
 // Connect to database
 connectDb();
 
-// Only start the server if not in Vercel serverless environment
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+// Only start the server if not in serverless environment (Vercel)
+if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => {
         console.log(`App listening to PORT ${PORT}`)
     })

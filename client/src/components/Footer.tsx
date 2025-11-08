@@ -13,30 +13,30 @@ const Footer: React.FC = () => {
             </p>
           </div>
           <div className="flex space-x-6">
-            <a
-              href="#"
-              className="text-sm text-gray-300 hover:text-white transition-colors"
+            <button
+              onClick={() => console.log("About clicked")}
+              className="text-sm text-gray-300 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
             >
               About
-            </a>
-            <a
-              href="#"
-              className="text-sm text-gray-300 hover:text-white transition-colors"
+            </button>
+            <button
+              onClick={() => console.log("Privacy clicked")}
+              className="text-sm text-gray-300 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
             >
               Privacy
-            </a>
-            <a
-              href="#"
-              className="text-sm text-gray-300 hover:text-white transition-colors"
+            </button>
+            <button
+              onClick={() => console.log("Terms clicked")}
+              className="text-sm text-gray-300 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
             >
               Terms
-            </a>
-            <a
-              href="#"
-              className="text-sm text-gray-300 hover:text-white transition-colors"
+            </button>
+            <button
+              onClick={() => console.log("Contact clicked")}
+              className="text-sm text-gray-300 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
             >
               Contact
-            </a>
+            </button>
           </div>
         </div>
         <div className="mt-4 pt-4 border-t border-gray-700 text-center">
