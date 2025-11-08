@@ -29,11 +29,15 @@ app.get('/health', (_req, res) => res.json({ ok: true }));
 app.use(notFound);
 app.use(errorHandler);
 
+// Connect to database
 connectDb();
-app.listen(PORT, () => {
-    console.log(`App listening to PORT ${PORT}`)
-})
 
+// Only start the server if not in Vercel serverless environment
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`App listening to PORT ${PORT}`)
+    })
+}
 
-//vercel deployment
+// Export for Vercel serverless
 export default app;
