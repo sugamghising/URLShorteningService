@@ -14,7 +14,7 @@ const envSchema = z.object({
 
 /**
  * Validates environment variables at startup
- * Throws error instead of exiting process (important for serverless)
+ * Returns default values for optional fields instead of throwing
  */
 function validateEnv() {
     try {
@@ -40,10 +40,16 @@ function validateEnv() {
                 console.error(`  - ${issue.path.join('.')}: ${issue.message}`);
             });
         }
-        console.error('\nPlease check your .env file and ensure all required variables are set.');
-        // Throw error instead of exiting - allows error handler to return proper response
-        // In serverless, process.exit() crashes the function instead of returning an error
-        throw new Error('Environment variable validation failed. Check logs for details.');
+        console.error('\n⚠️ Using fallback values. Some features may not work correctly.');
+
+        // Return safe defaults instead of throwing - allows app to start and show proper error
+        return {
+            PORT: process.env.PORT || '5000',
+            MONGODB_URI: process.env.MONGODB_URI || '',
+            CLIENT_ORIGIN: process.env.CLIENT_ORIGIN || '*',
+            BASE_URL: process.env.BASE_URL || `http://localhost:${process.env.PORT || '5000'}`,
+            NODE_ENV: (process.env.NODE_ENV as 'development' | 'production' | 'test') || 'development'
+        };
     }
 }
 

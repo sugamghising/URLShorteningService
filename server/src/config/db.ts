@@ -25,6 +25,13 @@ export const connectDb = async (): Promise<typeof mongoose> => {
         }
     }
 
+    // Check if MONGODB_URI is set
+    if (!env.MONGODB_URI || env.MONGODB_URI.trim() === '') {
+        const error = new Error('MONGODB_URI environment variable is not set. Please configure it in Vercel.');
+        console.error("❌", error.message);
+        throw error;
+    }
+
     try {
         // Connect with serverless-optimized options
         const connection = await mongoose.connect(env.MONGODB_URI, {
@@ -33,7 +40,7 @@ export const connectDb = async (): Promise<typeof mongoose> => {
             serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
             socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
         });
-        
+
         cachedConnection = connection;
         console.log("✅ MongoDB Connected");
         return connection;

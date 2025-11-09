@@ -77,6 +77,17 @@ connectDb().catch((error) => {
     // Don't exit in serverless, let requests handle connection errors
 });
 
+// Database connection middleware - ensures DB is connected before processing routes
+app.use('/api/shorten', async (_req, _res, next) => {
+    try {
+        await connectDb();
+        next();
+    } catch (error) {
+        // Pass database errors to error handler
+        next(error);
+    }
+});
+
 app.use('/api/shorten', shortenRouter);
 
 app.use(notFound);
