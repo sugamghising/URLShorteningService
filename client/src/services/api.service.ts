@@ -1,6 +1,7 @@
 import { UrlData, CreateUrlRequest, ApiError } from '../types/url.types';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+// Remove trailing slash from API_BASE_URL to avoid double slashes
+const API_BASE_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
 const API_ENDPOINT = `${API_BASE_URL}/api/shorten`;
 
 class ApiService {

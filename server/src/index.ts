@@ -13,10 +13,39 @@ dotenv.config();
 
 const PORT = env.PORT || 5000;
 
-// Apply global rate limiter to all requests
+// CORS configuration - must be before rate limiter to handle preflight requests
+// When credentials: true, origin cannot be '*', must be specific origin or function
+const corsOptions = {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+        // Allow requests with no origin (mobile apps, Postman, etc.)
+        if (!origin) {
+            return callback(null, true);
+        }
+        
+        // If CLIENT_ORIGIN is '*', allow all origins (but can't use credentials)
+        if (env.CLIENT_ORIGIN === '*') {
+            return callback(null, true);
+        }
+        
+        // Check if origin is in allowed list (support multiple origins)
+        const allowedOrigins = env.CLIENT_ORIGIN.split(',').map(o => o.trim());
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        
+        callback(new Error('Not allowed by CORS'));
+    },
+    credentials: env.CLIENT_ORIGIN !== '*', // Only allow credentials if not using wildcard
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Content-Type'],
+};
+
+app.use(cors(corsOptions));
+
+// Apply global rate limiter to all requests (after CORS)
 app.use(globalLimiter);
 
-app.use(cors({ origin: env.CLIENT_ORIGIN, credentials: true }))
 app.use(express.json())
 app.use(morgan('dev'))
 
