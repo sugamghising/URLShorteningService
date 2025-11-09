@@ -524,4 +524,5 @@ For questions or suggestions, please open an issue in the repository.
 
 ---
 
+Inspired By :[Roadmap.sh](https://roadmap.sh/projects/url-shortening-service)
 **Built with ❤️ using Node.js, Express, and TypeScript**
