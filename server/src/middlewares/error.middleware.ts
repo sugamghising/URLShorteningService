@@ -54,6 +54,14 @@ export function errorHandler(err: any, _req: Request, res: Response, _next: Next
         });
     }
 
+    // Handle database connection errors
+    if (err.message && err.message.includes('Database connection failed')) {
+        return res.status(503).json({
+            status: 'error',
+            message: 'Database service unavailable. Please try again later.'
+        });
+    }
+
     // Handle Zod validation errors
     if (err.name === 'ZodError') {
         return res.status(400).json({

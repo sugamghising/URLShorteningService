@@ -14,7 +14,7 @@ const envSchema = z.object({
 
 /**
  * Validates environment variables at startup
- * Exits the process if validation fails
+ * Throws error instead of exiting process (important for serverless)
  */
 function validateEnv() {
     try {
@@ -41,7 +41,9 @@ function validateEnv() {
             });
         }
         console.error('\nPlease check your .env file and ensure all required variables are set.');
-        process.exit(1);
+        // Throw error instead of exiting - allows error handler to return proper response
+        // In serverless, process.exit() crashes the function instead of returning an error
+        throw new Error('Environment variable validation failed. Check logs for details.');
     }
 }
 
