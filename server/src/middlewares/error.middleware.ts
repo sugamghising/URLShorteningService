@@ -58,7 +58,17 @@ export function errorHandler(err: any, _req: Request, res: Response, _next: Next
     if (err.message && err.message.includes('Database connection failed')) {
         return res.status(503).json({
             status: 'error',
-            message: 'Database service unavailable. Please try again later.'
+            message: 'Database service unavailable. Please try again later.',
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+    }
+
+    // Handle MongoDB server selection timeout
+    if (err.name === 'MongoServerSelectionError' || err.message?.includes('connection')) {
+        return res.status(503).json({
+            status: 'error',
+            message: 'Database connection failed. Please check your network connection.',
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
         });
     }
 

@@ -21,18 +21,18 @@ const corsOptions = {
         if (!origin) {
             return callback(null, true);
         }
-        
+
         // If CLIENT_ORIGIN is '*', allow all origins (but can't use credentials)
         if (env.CLIENT_ORIGIN === '*') {
             return callback(null, true);
         }
-        
+
         // Check if origin is in allowed list (support multiple origins)
         const allowedOrigins = env.CLIENT_ORIGIN.split(',').map(o => o.trim());
         if (allowedOrigins.includes(origin)) {
             return callback(null, true);
         }
-        
+
         callback(new Error('Not allowed by CORS'));
     },
     credentials: env.CLIENT_ORIGIN !== '*', // Only allow credentials if not using wildcard
@@ -56,14 +56,14 @@ app.get('/health', async (_req, res) => {
     try {
         // Check database connection status
         await connectDb();
-        res.json({ 
-            ok: true, 
+        res.json({
+            ok: true,
             database: 'connected',
             timestamp: new Date().toISOString()
         });
     } catch (error) {
-        res.status(503).json({ 
-            ok: false, 
+        res.status(503).json({
+            ok: false,
             database: 'disconnected',
             error: error instanceof Error ? error.message : 'Unknown error',
             timestamp: new Date().toISOString()
@@ -71,16 +71,10 @@ app.get('/health', async (_req, res) => {
     }
 });
 
-// Lazy database connection middleware
-// Connects to DB on first request instead of at module load time
-app.use(async (_req, _res, next) => {
-    try {
-        await connectDb();
-        next();
-    } catch (error) {
-        // If DB connection fails, pass to error handler instead of crashing
-        next(error);
-    }
+// Connect to database on app initialization (serverless will cache this)
+connectDb().catch((error) => {
+    console.error('Initial database connection failed:', error);
+    // Don't exit in serverless, let requests handle connection errors
 });
 
 app.use('/api/shorten', shortenRouter);
@@ -98,7 +92,7 @@ if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
             process.exit(1);
         }
     });
-    
+
     app.listen(PORT, () => {
         console.log(`App listening to PORT ${PORT}`)
     })
