@@ -9,7 +9,7 @@ import {
 
 interface UrlCardProps {
   urlData: UrlData;
-  onDelete?: (shortCode: string) => void;
+  onDelete?: (shortCode: string, secretKey: string) => void;
 }
 
 const UrlCard: React.FC<UrlCardProps> = ({ urlData, onDelete }) => {
@@ -28,7 +28,7 @@ const UrlCard: React.FC<UrlCardProps> = ({ urlData, onDelete }) => {
 
   const handleDelete = () => {
     if (window.confirm("Are you sure you want to delete this short URL?")) {
-      onDelete?.(urlData.shortCode);
+      onDelete?.(urlData.shortCode, urlData.secretKey);
     }
   };
 

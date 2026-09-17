@@ -2,6 +2,7 @@ export interface UrlData {
     _id: string;
     url: string;
     shortCode: string;
+    secretKey: string;
     accessCount: number;
     createdAt: string;
     updatedAt: string;
