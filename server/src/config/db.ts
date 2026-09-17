@@ -27,7 +27,7 @@ export const connectDb = async (): Promise<typeof mongoose> => {
 
     // Check if MONGODB_URI is set
     if (!env.MONGODB_URI || env.MONGODB_URI.trim() === '') {
-        const error = new Error('MONGODB_URI environment variable is not set. Please configure it in Vercel.');
+        const error = new Error('MONGODB_URI environment variable is not set.');
         console.error("❌", error.message);
         throw error;
     }

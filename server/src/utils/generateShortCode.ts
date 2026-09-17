@@ -6,7 +6,7 @@ let nanoidModule: { nanoid: (size?: number) => string } | null = null;
 /**
  * Dynamically imports nanoid (ESM module) in CommonJS context
  * Caches the import to avoid repeated dynamic imports
- * 
+ *
  * This is necessary because nanoid v5+ is ESM-only, but we compile to CommonJS
  * Dynamic import() works in CommonJS modules at runtime (Node.js feature)
  */
@@ -27,5 +27,19 @@ export async function generateUniqueShortCode(len = 6): Promise<string> {
         const code = nanoid(len)
         const exists = await UrlModel.exists({ shortCode: code })
         if (!exists) return code;
+    }
+}
+
+/**
+ * Generates a unique secret key for URL ownership.
+ * Uses nanoid(32) → ~157 bits of entropy (unguessable).
+ * Retries on collision to guarantee uniqueness.
+ */
+export async function generateUniqueSecretKey(): Promise<string> {
+    const nanoid = await getNanoid();
+    while (true) {
+        const key = nanoid(32);
+        const exists = await UrlModel.exists({ secretKey: key });
+        if (!exists) return key;
     }
 }

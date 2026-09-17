@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface IUrl extends Document {
     url: string;
     shortCode: string;
+    secretKey: string;
     accessCount: number;
     createdAt: Date;
     updatedAt: Date;
@@ -14,6 +15,12 @@ const urlSchema = new Schema<IUrl>({
         required: true
     },
     shortCode: {
+        type: String,
+        required: true,
+        unique: true,
+        index: true
+    },
+    secretKey: {
         type: String,
         required: true,
         unique: true,

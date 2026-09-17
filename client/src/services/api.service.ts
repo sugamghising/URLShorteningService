@@ -40,11 +40,12 @@ class ApiService {
         return this.handleResponse<UrlData>(response);
     }
 
-    async updateUrl(shortCode: string, url: string): Promise<UrlData> {
+    async updateUrl(shortCode: string, url: string, secretKey: string): Promise<UrlData> {
         const response = await fetch(`${API_ENDPOINT}/${shortCode}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Secret-Key': secretKey,
             },
             body: JSON.stringify({ url } as CreateUrlRequest),
         });
@@ -52,9 +53,10 @@ class ApiService {
         return this.handleResponse<UrlData>(response);
     }
 
-    async deleteUrl(shortCode: string): Promise<void> {
+    async deleteUrl(shortCode: string, secretKey: string): Promise<void> {
         const response = await fetch(`${API_ENDPOINT}/${shortCode}`, {
             method: 'DELETE',
+            headers: { 'X-Secret-Key': secretKey },
         });
 
         if (!response.ok) {

@@ -4,19 +4,22 @@ import Footer from "./components/Footer";
 import UrlForm from "./components/UrlForm";
 import UrlCard from "./components/UrlCard";
 import Stats from "./components/Stats";
+import SecretKeyAlert from "./components/SecretKeyAlert";
 import { UrlData } from "./types/url.types";
 import apiService from "./services/api.service";
 
 function App() {
   const [urls, setUrls] = useState<UrlData[]>([]);
+  const [showSecretKey, setShowSecretKey] = useState<string | null>(null);
 
   const handleUrlCreated = (newUrl: UrlData) => {
     setUrls([newUrl, ...urls]);
+    setShowSecretKey(newUrl.secretKey);
   };
 
-  const handleDeleteUrl = async (shortCode: string) => {
+  const handleDeleteUrl = async (shortCode: string, secretKey: string) => {
     try {
-      await apiService.deleteUrl(shortCode);
+      await apiService.deleteUrl(shortCode, secretKey);
       setUrls(urls.filter((url) => url.shortCode !== shortCode));
     } catch (error) {
       console.error("Failed to delete URL:", error);
@@ -176,6 +179,14 @@ function App() {
       </main>
 
       <Footer />
+
+      {/* Secret Key Alert Modal */}
+      {showSecretKey && (
+        <SecretKeyAlert
+          secretKey={showSecretKey}
+          onClose={() => setShowSecretKey(null)}
+        />
+      )}
     </div>
   );
 }

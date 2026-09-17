@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { createUrlSchema } from '../schema/shorten.schema';
-import { generateUniqueShortCode } from '../utils/generateShortCode';
+import { generateUniqueShortCode, generateUniqueSecretKey } from '../utils/generateShortCode';
 import UrlModel from '../models/Url.model';
 import { NotFoundError, ValidationError } from '../utils/errors';
-
 
 export const createShortUrl = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -12,8 +11,13 @@ export const createShortUrl = async (req: Request, res: Response, next: NextFunc
             throw new ValidationError('Invalid URL format');
         }
         const shortCode = await generateUniqueShortCode();
-        const doc = await UrlModel.create({ url: parsed.data.url, shortCode })
-        res.status(201).json(doc);
+        const secretKey = await generateUniqueSecretKey();
+        const doc = await UrlModel.create({ url: parsed.data.url, shortCode, secretKey });
+        // Return the secret key so the owner can manage the URL later
+        res.status(201).json({
+            ...doc.toObject(),
+            secretKey,
+        });
     } catch (error) {
         next(error);
     }
@@ -36,7 +40,6 @@ export const getOriginal = async (req: Request, res: Response, next: NextFunctio
         next(error);
     }
 }
-
 
 export const updateUrl = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -74,7 +77,6 @@ export const deleteUrl = async (req: Request, res: Response, next: NextFunction)
         next(error);
     }
 }
-
 
 export const getStats = async (req: Request, res: Response, next: NextFunction) => {
     try {
