@@ -9,10 +9,12 @@ import {
 
 interface UrlCardProps {
   urlData: UrlData;
+  secretKey?: string;
   onDelete?: (shortCode: string, secretKey: string) => void;
+  onVisit?: (shortCode: string) => void;
 }
 
-const UrlCard: React.FC<UrlCardProps> = ({ urlData, onDelete }) => {
+const UrlCard: React.FC<UrlCardProps> = ({ urlData, secretKey, onDelete, onVisit }) => {
   const [copied, setCopied] = useState(false);
   const [showStats, setShowStats] = useState(false);
 
@@ -27,8 +29,12 @@ const UrlCard: React.FC<UrlCardProps> = ({ urlData, onDelete }) => {
   };
 
   const handleDelete = () => {
+    if (!secretKey) {
+      alert("Secret key not available — cannot delete. Save the key when creating the URL.");
+      return;
+    }
     if (window.confirm("Are you sure you want to delete this short URL?")) {
-      onDelete?.(urlData.shortCode, urlData.secretKey);
+      onDelete?.(urlData.shortCode, secretKey);
     }
   };
 
@@ -53,6 +59,7 @@ const UrlCard: React.FC<UrlCardProps> = ({ urlData, onDelete }) => {
               href={shortUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => onVisit?.(urlData.shortCode)}
               className="text-blue-600 hover:text-blue-800 font-medium break-all flex-1"
             >
               {shortUrl}

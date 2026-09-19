@@ -2,46 +2,16 @@ import React from "react";
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
-
   return (
-    <footer className="bg-gray-800 text-white mt-auto">
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0">
-            <p className="text-sm text-gray-300">
-              © {currentYear} URL Shortener. All rights reserved.
-            </p>
-          </div>
-          <div className="flex space-x-6">
-            <button
-              onClick={() => console.log("About clicked")}
-              className="text-sm text-gray-300 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
-            >
-              About
-            </button>
-            <button
-              onClick={() => console.log("Privacy clicked")}
-              className="text-sm text-gray-300 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
-            >
-              Privacy
-            </button>
-            <button
-              onClick={() => console.log("Terms clicked")}
-              className="text-sm text-gray-300 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
-            >
-              Terms
-            </button>
-            <button
-              onClick={() => console.log("Contact clicked")}
-              className="text-sm text-gray-300 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
-            >
-              Contact
-            </button>
-          </div>
+    <footer style={{ background: '#0f172a', color: '#ccc', padding: '60px 0 28px', borderTop: '3px solid #c9a227' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '24px' }}>
+        <div>
+          <h4 style={{ fontFamily: '"Playfair Display", Georgia, serif', color: '#fff', fontSize: '1.1rem', margin: '0 0 6px' }}>URL Shortener</h4>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#889' }}>Built with React 19, TypeScript, Tailwind, Express, MongoDB.</p>
         </div>
-        <div className="mt-4 pt-4 border-t border-gray-700 text-center">
-          <p className="text-xs text-gray-400">
-            Built with ❤️ using React, TypeScript, and Tailwind CSS
+        <div style={{ textAlign: 'right' }}>
+          <p style={{ margin: 0, fontSize: '0.85rem' }}>
+            <a href="#" style={{ color: '#fff', opacity: 0.9 }}>About</a> &middot; <a href="#" style={{ color: '#fff', opacity: 0.9 }}>Privacy</a> &middot; <a href="#" style={{ color: '#fff', opacity: 0.9 }}>Terms</a>
           </p>
         </div>
       </div>

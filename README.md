@@ -17,7 +17,8 @@ A complete, full-stack URL shortening service with a modern React frontend and r
 - **URL Shortening**: Convert long URLs into short, easy-to-share links
 - **Unique Short Codes**: Automatically generate collision-free short codes using nanoid
 - **Access Tracking**: Monitor how many times each shortened URL has been accessed
-- **Full CRUD Operations**: Create, read, update, and delete shortened URLs
+- **Full CRUD Operations**: Create, read, update, and delete shortened URLs (update/delete protected by secret key — see Authentication section)
+- **Secret Key Authentication**: Each URL generates an unguessable 32-char secret key (≈157 bits entropy). No user login required — possession of the key grants update/delete access
 - **RESTful API**: Clean and intuitive API endpoints
 - **Type Safety**: Built with TypeScript for better code quality
 - **Input Validation**: Robust validation using Zod schema validation
@@ -34,6 +35,7 @@ A complete, full-stack URL shortening service with a modern React frontend and r
   - [Backend Setup](#backend-setup)
   - [Frontend Setup](#frontend-setup)
 - [Environment Variables](#environment-variables)
+- [Authentication](#authentication-secret-key--no-login-required)
 - [API Endpoints](#api-endpoints)
 - [Rate Limiting](#rate-limiting)
 - [Error Handling](#error-handling)
@@ -406,22 +408,69 @@ curl http://localhost:5000/api/shorten/abc123/stats
 }
 ```
 
+### Authentication (Secret Key — No Login Required)
+
+Every created URL gets a unique secret key. The owner can use this key to update or delete the URL.
+
+**Create URL** (returns secret key in response):
+
+```bash
+curl -X POST http://localhost:5000/api/shorten \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com/long-url"}'
+```
+
+**Response includes `secretKey`:**
+
+```json
+{
+  "shortCode": "abc123",
+  "url": "https://example.com/long-url",
+  "secretKey": "fV3ANh4tFCGym2J03S6-YrPHJvKJCUO-",
+  ...
+}
+```
+
+**Update (requires `X-Secret-Key`):**
+
+```bash
+curl -X PUT http://localhost:5000/api/shorten/abc123 \
+  -H "Content-Type: application/json" \
+  -H "X-Secret-Key: fV3ANh4tFCGym2J03S6-YrPHJvKJCUO-" \
+  -d '{"url": "https://newexample.com/updated"}'
+```
+
+**Delete (requires `X-Secret-Key`):**
+
+```bash
+curl -X DELETE http://localhost:5000/api/shorten/abc123 \
+  -H "X-Secret-Key: fV3ANh4tFCGym2J03S6-YrPHJvKJCUO-"
+```
+
+**Access / redirect / stats** — fully public, no authentication needed.
+
 ### Update URL
+
+Requires `X-Secret-Key` header (see [Authentication](#authentication-secret-key--no-login-required)).
 
 **Request:**
 
 ```bash
 curl -X PUT http://localhost:5000/api/shorten/abc123 \
   -H "Content-Type: application/json" \
+  -H "X-Secret-Key: <your-secret-key>" \
   -d '{"url": "https://www.newexample.com/updated-url"}'
 ```
 
 ### Delete URL
 
+Requires `X-Secret-Key` header.
+
 **Request:**
 
 ```bash
-curl -X DELETE http://localhost:5000/api/shorten/abc123
+curl -X DELETE http://localhost:5000/api/shorten/abc123 \
+  -H "X-Secret-Key: <your-secret-key>"
 ```
 
 **Success Response:** `204 No Content`

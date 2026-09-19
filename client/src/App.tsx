@@ -11,37 +11,70 @@ import apiService from "./services/api.service";
 function App() {
   const [urls, setUrls] = useState<UrlData[]>([]);
   const [showSecretKey, setShowSecretKey] = useState<string | null>(null);
+  const [secretKeys, setSecretKeys] = useState<Record<string, string>>({});
 
   const handleUrlCreated = (newUrl: UrlData) => {
     setUrls([newUrl, ...urls]);
     setShowSecretKey(newUrl.secretKey);
+    setSecretKeys((prev) => ({ ...prev, [newUrl.shortCode]: newUrl.secretKey }));
   };
 
   const handleDeleteUrl = async (shortCode: string, secretKey: string) => {
     try {
       await apiService.deleteUrl(shortCode, secretKey);
-      setUrls(urls.filter((url) => url.shortCode !== shortCode));
+      setUrls((prev) => prev.filter((url) => url.shortCode !== shortCode));
+      setSecretKeys((prev) => {
+        const next = { ...prev };
+        delete next[shortCode];
+        return next;
+      });
     } catch (error) {
       console.error("Failed to delete URL:", error);
       alert("Failed to delete URL. Please try again.");
     }
   };
 
+  const handleVisitUrl = async (shortCode: string) => {
+    try {
+      const fresh = await apiService.getUrlStats(shortCode);
+      setUrls((prev) => prev.map((u) =>
+        u.shortCode === shortCode ? { ...u, ...fresh } : u
+      ));
+    } catch {
+      // Stats endpoint unreachable (e.g. offline) — optimistically bump
+      // so the UI still reflects the click that just happened.
+      setUrls((prev) => prev.map((u) =>
+        u.shortCode === shortCode ? { ...u, accessCount: u.accessCount + 1 } : u
+      ));
+    }
+  };
+
   const totalClicks = urls.reduce((sum, url) => sum + url.accessCount, 0);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: '100vh',
+      background: '#faf9f7',
+      fontFamily: '"Inter", system-ui, sans-serif',
+    }}>
       <Header />
 
       <main className="flex-grow container mx-auto px-4 py-8">
         {/* Hero Section */}
-        <div className="max-w-4xl mx-auto mb-12 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-            Simplify Your Links
-          </h2>
-          <p className="text-lg text-gray-600 mb-8">
-            Create short, memorable links in seconds. Track clicks and share
-            with ease.
+        <div style={{ maxWidth: '900px', margin: '0 auto 48px', textAlign: 'center', padding: '60px 0 24px' }}>
+          <h2 style={{
+            fontFamily: '"Playfair Display", Georgia, serif',
+            fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
+            fontWeight: 700,
+            color: '#0f172a',
+            letterSpacing: '-0.03em',
+            lineHeight: 1.1,
+            margin: '0 0 16px',
+          }}>Simplify links. <em style={{ fontStyle: 'italic', color: '#c9a227' }}>Measure impact.</em></h2>
+          <p style={{ fontSize: '1.15rem', color: '#475569', maxWidth: '540px', margin: '0 auto' }}>
+            Create short, memorable links. Track access with a secret-key system — no login required.
           </p>
         </div>
 
@@ -68,7 +101,9 @@ function App() {
                 <UrlCard
                   key={url._id}
                   urlData={url}
+                  secretKey={secretKeys[url.shortCode] || url.secretKey}
                   onDelete={handleDeleteUrl}
+                  onVisit={handleVisitUrl}
                 />
               ))}
             </div>
@@ -97,83 +132,43 @@ function App() {
           </div>
         )}
 
-        {/* Features Section */}
-        <div className="max-w-6xl mx-auto mt-16 mb-12">
-          <h3 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-            Why Use Our URL Shortener?
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-lg shadow-md p-6 text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
+        {/* Features */}
+        <div style={{ maxWidth: '1100px', margin: '80px auto 40px', padding: '0 28px' }}>
+          <h3 style={{
+            fontFamily: '"Playfair Display", Georgia, serif',
+            fontSize: '2rem',
+            textAlign: 'center',
+            marginBottom: '48px',
+            color: '#162540',
+          }}>Why this shortener</h3>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '28px',
+          }}>
+            {[
+              { label: 'Secret-Key Auth', desc: 'Per-URL 32-char keys. No account needed — possession grants manage rights.', icon: '01' },
+              { label: 'Rate Protected', desc: 'Four-layer express-rate-limit: global, create, get, modify.', icon: '02' },
+              { label: 'Serverless Cache', desc: 'Mongoose connection cached across Vercel cold starts.', icon: '03' },
+            ].map((f) => (
+              <div key={f.label} style={{
+                background: '#f3f1ee',
+                border: '1px solid #d6d3ce',
+                padding: '36px 32px',
+                borderRadius: '2px',
+              }} role="listitem">
+                <div style={{
+                  width: '48px', height: '48px',
+                  border: '2px solid #c9a227',
+                  borderRadius: '50%',
+                  display: 'grid', placeItems: 'center',
+                  fontFamily: '"Playfair Display", serif', fontSize: '1.25rem',
+                  color: '#c9a227', marginBottom: '18px',
+                }}>{f.icon}</div>
+                <h4 style={{ fontFamily: '"Playfair Display", Georgia, serif', fontSize: '1.15rem', fontWeight: 600, margin: '0 0 8px', color: '#162540' }}>{f.label}</h4>
+                <p style={{ margin: 0, fontSize: '0.95rem', color: '#475569', lineHeight: 1.45 }}>{f.desc}</p>
               </div>
-              <h4 className="text-xl font-semibold text-gray-800 mb-2">
-                Lightning Fast
-              </h4>
-              <p className="text-gray-600">
-                Generate short links instantly with our optimized backend
-              </p>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6 text-center">
-              <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-              </div>
-              <h4 className="text-xl font-semibold text-gray-800 mb-2">
-                Track Clicks
-              </h4>
-              <p className="text-gray-600">
-                Monitor how many times your links are accessed
-              </p>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6 text-center">
-              <div className="bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-purple-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                  />
-                </svg>
-              </div>
-              <h4 className="text-xl font-semibold text-gray-800 mb-2">
-                Secure & Reliable
-              </h4>
-              <p className="text-gray-600">
-                Your data is safe with our enterprise-grade security
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </main>
