@@ -37,7 +37,7 @@ const corsOptions = {
     },
     credentials: env.CLIENT_ORIGIN !== '*', // Only allow credentials if not using wildcard
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Secret-Key'],
     exposedHeaders: ['Content-Type'],
 };
 
