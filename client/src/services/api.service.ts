@@ -60,11 +60,18 @@ class ApiService {
         });
 
         if (!response.ok) {
-            const data = await response.json();
-            const error = new Error(data.message || 'An error occurred') as Error & ApiError;
-            error.status = 'error';
-            Object.assign(error, data);
-            throw error;
+            let message = 'An error occurred';
+            try {
+                const data = await response.json();
+                message = data.message || message;
+                const error = new Error(message) as Error & ApiError;
+                error.status = 'error';
+                Object.assign(error, data);
+                throw error;
+            } catch (err) {
+                if (err instanceof Error && (err as Error & ApiError).status === 'error') throw err;
+                throw new Error(`${message} (status ${response.status})`);
+            }
         }
     }
 }

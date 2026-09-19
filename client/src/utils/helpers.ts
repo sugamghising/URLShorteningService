@@ -1,8 +1,10 @@
 /**
  * Format a date string to a readable format
  */
-export const formatDate = (dateString: string): string => {
+export const formatDate = (dateString: string | undefined): string => {
+    if (!dateString) return 'Unknown';
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid date';
     return new Intl.DateTimeFormat('en-US', {
         year: 'numeric',
         month: 'short',
@@ -41,7 +43,7 @@ export const isValidUrl = (url: string): boolean => {
  * Get the full short URL
  */
 export const getShortUrl = (shortCode: string): string => {
-    const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    const baseUrl = (process.env.REACT_APP_API_URL || 'http://localhost:5000').replace(/\/+$/, '');
     return `${baseUrl}/api/shorten/${shortCode}`;
 };
 

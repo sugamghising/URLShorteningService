@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>URL Shortener — Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f172a;
+    --paper: #faf9f7;
+    --paper-deep: #f3f1ee;
+    --amber: #c9a227;
+    --amber-soft: #eadd9f;
+    --navy: #162540;
+    --slate: #475569;
+    --line: #d6d3ce;
+    --radius: 2px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink:#f2efe9; --paper:#121218; --paper-deep:#181820; --line:#2a2a3a; --amber:#d9bc35; --navy:#0e1636; }
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:"Inter", system-ui, sans-serif; line-height:1.55; -webkit-font-smoothing:antialiased; }
+  img { max-width:100%; height:auto; display:block; }
+  a { color:inherit; text-decoration:none; }
+
+  /* Typography */
+  h1, h2, h3 { font-family:"Playfair Display", Georgia, serif; letter-spacing:-0.02em; line-height:1.15; font-weight:600; color:var(--navy); }
+  h1 { font-size:clamp(3rem,8vw,6rem); }
+  h2 { font-size:clamp(2rem,5vw,3.5rem); }
+  h3 { font-size:clamp(1.25rem,3vw,1.75rem); }
+  p { max-width:65ch; }
+
+  /* Layout */
+  .wrap { max-width:1100px; margin:0 auto; padding:0 28px; }
+  .section { padding-block:120px; }
+
+  /* Header */
+  header { background:var(--navy); color:#fff; padding:28px 0; border-bottom:3px solid var(--amber); }
+  .header-inner { display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+  .logo-lockup { display:flex; align-items:center; gap:14px; }
+  .logo-lockup img { width:42px; height:42px; object-fit:contain; }
+  .logo-lockup span { font-family:"Playfair Display", serif; font-size:1.35rem; letter-spacing:-0.01em; }
+  .logo-lockup small { display:block; font-family:"Inter", sans-serif; font-weight:300; font-size:0.78rem; opacity:0.7; letter-spacing:0.04em; text-transform:uppercase; }
+
+  /* Hero */
+  .hero { background:linear-gradient(180deg, var(--navy) 0%, #0b1225 100%); color:var(--paper); padding:140px 0 120px; position:relative; overflow:hidden; }
+  .hero::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 70% 30%, rgba(201,162,39,0.12) 0%, transparent 60%); pointer-events:none; }
+  .hero .wrap { position:relative; z-index:1; }
+  .hero h1 { color:#fff; }
+  .hero h1 em { font-style:italic; color:var(--amber-soft); }
+  .hero p { font-size:1.15rem; color:#c8c6bf; margin-top:1rem; }
+  .hero .meta { display:inline-flex; gap:28px; margin-top:40px; font-size:0.82rem; letter-spacing:0.06em; text-transform:uppercase; color:#9aa0a8; }
+  .hero .meta span { border-left:1px solid rgba(255,255,255,0.18); padding-left:28px; }
+
+  /* Section dividers */
+  hr.rule { border:none; border-top:1px solid var(--line); margin:0; }
+
+  /* Cards — flat, no shadow gradients, only subtle depth */
+  .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:28px; }
+  .card { background:var(--paper-deep); border:1px solid var(--line); padding:36px 32px; border-radius:var(--radius); }
+  .card h3 { margin:0 0 10px; font-size:1.15rem; }
+  .card p { margin:0; font-size:0.95rem; color:var(--slate); }
+  .card .icon { width:48px; height:48px; border:2px solid var(--amber); border-radius:50%; display:grid; place-items:center; font-family:"Playfair Display", serif; font-size:1.25rem; color:var(--amber); margin-bottom:18px; }
+
+  /* Feature list — editorial, numbered by content not decoration */
+  .features { display:flex; flex-direction:column; gap:48px; }
+  .feature-row { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center; }
+  .feature-row.reverse { direction:rtl; }
+  .feature-row.reverse > * { direction:ltr; }
+  .feature-row .text h3 { margin:0 0 12px; }
+  .feature-row .text p { margin:0; color:var(--slate); }
+  .feature-row .visual { background:var(--navy); border-radius:var(--radius); padding:40px; color:#fff; }
+  .feature-row .visual h4 { font-family:"Inter", sans-serif; font-weight:500; font-size:0.82rem; letter-spacing:0.08em; text-transform:uppercase; opacity:0.7; margin:0 0 12px; }
+  .feature-row .visual .big { font-family:"Playfair Display", serif; font-size:2.4rem; color:var(--amber-soft); line-height:1; }
+
+  /* Style notes panel — the brief's critique across as transparent rules */
+  .notes { background:#fff; border:1px solid var(--line); border-top:4px solid var(--amber); padding:32px; border-radius:var(--radius); }
+  .notes h3 { margin:0 0 14px; font-size:1.2rem; }
+  .notes table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+  .notes th, .notes td { text-align:left; padding:10px 6px; border-bottom:1px solid var(--line); }
+  .notes th { font-weight:500; text-transform:uppercase; letter-spacing:0.04em; font-size:0.7rem; color:var(--slate); }
+  .notes code { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; background:#f0efe9; padding:2px 5px; border-radius:2px; font-size:0.85em; }
+
+  /* Footer */
+  footer { background:var(--ink); color:#ccc; padding:60px 0 28px; border-top:3px solid var(--amber); }
+  footer a { color:#fff; }
+  .footer-inner { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:24px; }
+  footer h4 { font-family:"Playfair Display", serif; color:#fff; font-size:1.1rem; margin:0 0 6px; }
+  footer p { margin:0; font-size:0.85rem; color:#889; }
+
+  .badge { display:inline-block; font-family:"Inter", sans-serif; font-weight:500; font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; padding:4px 10px; border-radius:999px; border:1px solid var(--line); color:var(--slate); }
+
+  @media (max-width:780px) {
+    .feature-row { grid-template-columns:1fr; }
+    .feature-row.reverse { direction:ltr; }
+    .hero { padding:100px 0 80px; }
+    .section { padding-block:80px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap header-inner">
+    <a href="#" class="logo-lockup" aria-label="URL Shortener home">
+      <img src="logo.svg" alt="" width="42" height="42" />
+      <div><span>URL Shortener</span><small>Link compression service</small></div>
+    </a>
+    <nav aria-label="Primary" style="font-family:Inter,sans-serif;font-size:0.88rem;letter-spacing:0.02em;">
+      <a href="#design" style="margin-right:28px;color:#fff;opacity:0.9;">Design</a>
+      <a href="#tech" style="color:#fff;opacity:0.9;">Technical</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero" aria-label="Introduction">
+  <div class="wrap">
+    <h1>Simplify links. <em>Measure impact.</em></h1>
+    <p>A URL shortener rebuilt with editorial discipline: no decorative gradients, no templated cards, and a typography system that carries the identity of the product.</p>
+    <div class="meta" aria-label="Project metadata">
+      <span>React 19 / TypeScript</span>
+      <span>Express / MongoDB</span>
+      <span>Secret-key auth</span>
+    </div>
+  </div>
+</section>
+
+<main>
+  <!-- Design System -->
+  <section id="design" class="section wrap" aria-label="Design system">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:48px;">
+      <h2>The Design System</h2>
+      <span class="badge">No gradients &middot; Flat cards &middot; Playfair + Inter</span>
+    </div>
+
+    <div class="cards" role="list" aria-label="Design tokens">
+      <article class="card" role="listitem">
+        <div class="icon" aria-hidden="true">01</div>
+        <h3>Palette</h3>
+        <p>Navy <code>#162540</code>, warm paper <code>#faf9f7</code>, amber accent <code>#c9a227</code>, slate text <code>#475569</code>. No gradient washes — color is used structurally.</p>
+      </article>
+      <article class="card" role="listitem">
+        <div class="icon" aria-hidden="true">02</div>
+        <h3>Type</h3>
+        <p>Playfair Display for headlines (character, contrast), Inter for body (clarity, scale). No all-caps labels, no decorative italic words.</p>
+      </article>
+      <article class="card" role="listitem">
+        <div class="icon" aria-hidden="true">03</div>
+        <h3>Layout</h3>
+        <p>Left-aligned content at 65ch line length. Cards use flat borders and subtle fill — not rounded shadow cards. Hierarchy by size, not by decoration.</p>
+      </article>
+    </div>
+
+    <hr class="rule" style="margin-top:64px;" />
+
+    <h3 style="margin-top:64px;margin-bottom:28px;">Before vs. After — Key Changes</h3>
+    <div class="notes" aria-label="Design critique notes">
+      <h3>What changed and why</h3>
+      <table>
+        <thead><tr><th>Element</th><th>Before</th><th>After</th><th>Reason</th></tr></thead>
+        <tbody>
+          <tr><td>Header</td><td>Gradient <code>from-blue-600 to-blue-800</code></td><td>Solid navy <code>#162540</code> + amber rule</td><td>Removes default SaaS gradient; uses structural color</td></tr>
+          <tr><td>Hero bg</td><td>White / gray gradient</td><td>Deep navy with radial amber glow (non-gradient)</td><td>Creates focus without gradient banding</td></tr>
+          <tr><td>Cards</td><td>White + shadow + rounded-xl</td><td>Paper-deep fill + 2px border + 2px radius</td><td>Flat hierarchy; no decorative shadow uniformity</td></tr>
+          <tr><td>Font</td><td>System sans only</td><td>Playfair + Inter pairing</td><td>Distinctive identity; editorial tone</td></tr>
+          <tr><td>Logo</td><td>Inline SVG link icon</td><td><code>logo.svg</code> + updated manifest</td><td>Consistent brand asset across favicon / PWA</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <!-- Technical Highlights -->
+  <section id="tech" class="section wrap" aria-label="Technical details">
+    <h2>Technical Highlights</h2>
+    <p style="font-size:1.05rem;color:var(--slate);margin-top:8px;">The backend architecture that supports the redesigned frontend.</p>
+
+    <div class="features" role="list" aria-label="Feature highlights">
+      <article class="feature-row" role="listitem">
+        <div class="text">
+          <h3>Secret-Key Authentication</h3>
+          <p>Per-URL 32-character unguessable keys (~157 bits entropy) generated with nanoid. No user login required — possession of the key grants update/delete access. Routed through <code>secretAuth.middleware.ts</code>.</p>
+        </div>
+        <div class="visual" aria-label="Secret key details">
+          <h4>Authentication</h4>
+          <div class="big">32 chars</div>
+          <p style="margin:10px 0 0;font-size:0.85rem;color:#aaa;">X-Secret-Key header &middot; Middleware on PUT / DELETE</p>
+        </div>
+      </article>
+      <article class="feature-row reverse" role="listitem">
+        <div class="text">
+          <h3>Rate Limiting &amp; Security</h3>
+          <p>Multi-layer express-rate-limit: global (200/15min), create (100/15min), get (60/min), modify (30/15min). Custom error classes in <code>utils/errors.ts</code> with consistent <code>{status, message}</code> responses.</p>
+        </div>
+        <div class="visual" aria-label="Rate limits">
+          <h4>Rate Limits</h4>
+          <div class="big">4 layers</div>
+          <p style="margin:10px 0 0;font-size:0.85rem;color:#aaa;">Standard headers &middot; 429 responses</p>
+        </div>
+      </article>
+      <article class="feature-row" role="listitem">
+        <div class="text">
+          <h3>Database &amp; Serverless</h3>
+          <p>Mongoose with cached connection for serverless cold-start reuse. Dynamic <code>import("nanoid")</code> handles ESM/CJS interop (nanoid v5 is ESM-only). Zod validates env vars at startup.</p>
+        </div>
+        <div class="visual" aria-label="Database details">
+          <h4>Backend</h4>
+          <div class="big">MongoDB</div>
+          <p style="margin:10px 0 0;font-size:0.85rem;color:#aaa;">Mongoose ODM &middot; Cached connections</p>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-inner">
+    <div>
+      <h4>URL Shortener</h4>
+      <p>Built with React 19, TypeScript, Tailwind, Express, MongoDB.</p>
+    </div>
+    <div style="text-align:right;">
+      <p><a href="#design">Design changes</a> &middot; <a href="#">Auth docs in README</a> &middot; <a href="#">End-to-end tests (27/27)</a></p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
